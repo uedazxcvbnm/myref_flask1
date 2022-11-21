@@ -10,6 +10,7 @@ import './popup_check.dart';
 import './nextpage.dart';
 import './provider.dart';
 import './main3_4.dart';
+import './recipe_recommend1.dart';
 /*import './page3.dart';
 import './page4.dart';*/
 import './database_myref.dart';
@@ -23,15 +24,15 @@ import 'dart:async';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:blobs/blobs.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import './local_notification.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 final GlobalKey<NavigatorState> navBarGlobalKey = GlobalKey<NavigatorState>();
 
 //BottomNavigationBar
 void main() {
-  //Stetho.initialize();
   runApp(
     ProviderScope(child: MyApp()),
   );
@@ -80,7 +81,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     //食品を表示する画面
     NextPage(),
     //賞味期限が切れそうな食品で作った料理の紹介画面
-    homePage3(),
+    Recipe(),
     //設定画面
     homePage4(),
   ];
@@ -255,6 +256,13 @@ class _MyHomePage extends State<MyHomePage> {
 
   var _selectedvalue = null;
 
+  // タイトルインプットテキストコントローラー
+  TextEditingController titleTextEditingController = TextEditingController();
+  // 内容インプットテキストコントローラー
+  TextEditingController contentsTextEditingController = TextEditingController();
+  // ローカル通知の初期化
+  LocalNotifications localNotifications = new LocalNotifications();
+
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: _tabs.length,
@@ -370,6 +378,12 @@ class _MyHomePage extends State<MyHomePage> {
                                     count: _counter,
                                     date: _nowtime.toString(),
                                     name: _memoList[index].name);
+
+                                bool isComppleted = await localNotifications
+                                    .SetLocalNotification(
+                                        titleTextEditingController.text,
+                                        contentsTextEditingController.text,
+                                        DateTime.parse(_nowtime));
 
                                 //データベースをアップデート
                                 await Refri.insertMemo(update_refri2);
