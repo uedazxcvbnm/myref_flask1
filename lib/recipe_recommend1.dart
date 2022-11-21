@@ -39,6 +39,7 @@ class _RecipePageState extends State<Recipe> {
           children: <Widget>[
             // デフォルト表示
             Text('Default'),
+            Text('Default')
           ],
         ),
       ),
