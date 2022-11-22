@@ -48,7 +48,7 @@ class Material_db {
   final String kana;
   final String category;
   final int exday;
-  final String  image;
+  final String image;
 
   Material_db({
     required this.id,
@@ -72,10 +72,10 @@ class Material_db {
 
   @override
   String toString() {
-    return 'material{id: $id, name: $name, kana:$kana,category:$category,exday:$exday,image:$image)'; /**/
+    return 'material{id: $id, name: $name, kana:$kana,category:$category,exday:$exday,image:$image)';
+    /**/
   }
 
-  
   //挿入
   static Future<void> insertMaterial(Material_db material) async {
     final Database db = await database;
@@ -103,4 +103,3 @@ class Material_db {
     });
   }
 }
-  

@@ -2,10 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import './main.dart';
-import './page1.dart';
-import './page2.dart';
 import './main3_4.dart';
-import './popup_check.dart';
 /*import './page3.dart';
 import './page4.dart';*/
 import './database_myref.dart';
@@ -28,7 +25,6 @@ class Expired_food extends StatefulWidget {
 }
 
 class Expired_foodState extends State<Expired_food> {
-  
   var _selectedValue = '機能１';
   var _usStates = ["機能１", "機能２", "機能３"];
 
@@ -51,8 +47,7 @@ class Expired_foodState extends State<Expired_food> {
   //複数のテーブルを同時に取得するために必要な関数
   //https://qiita.com/ninoko1995/items/fe7115d8030a7a4cce0d
   Stream<Map<String, dynamic>> streamName2() {
-    return initializeDemo()
-        .combineLatestAll([initializeDemo2()]).map((data) {
+    return initializeDemo().combineLatestAll([initializeDemo2()]).map((data) {
       return {
         "initializeDemo": data[0],
         "initializeDemo2": data[1],
@@ -69,23 +64,14 @@ class Expired_foodState extends State<Expired_food> {
   var _now = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   //ウィジェットの表示/非表示で使うもの
-  DateTime _now2 =DateTime.now();
-  
+  DateTime _now2 = DateTime.now();
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('賞味期限管理アプリ'),
         backgroundColor: Colors.green,
         //automaticallyImplyLeading: false,
-        actions: [
-            IconButton(
-              icon: Icon(Icons.android),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: ((context) => popUpPage())));
-              },
-            ),
-          ],
       ),
       body: Center(
         child: StreamBuilder(
@@ -105,44 +91,45 @@ class Expired_foodState extends State<Expired_food> {
                 return Card(
                   child: Column(
                     children: <Widget>[
-                      if(_memolist[index].count != 0)...[
-                        if (DateTime.parse(_now).isAfter(DateTime.parse(_memolist[index].date))) ...[
+                      //if(_memolist[index].count != 0)...[
+                      if (DateTime.parse(_now)
+                          .isAfter(DateTime.parse(_memolist[index].date))) ...[
                         //if (_memolist3[index].count != 0)
                         //refriテーブルのid
-                          Text(
-                            'ID${_memolist[index].id.toString()}',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                        Text(
+                          'ID${_memolist[index].id.toString()}',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        //refriテーブルのdate
+                        Text('${_memolist[index].date}'),
+                        //refriテーブルのcount
+                        //Text('count  ${_memolist[index].count.toString()}'),
+                        //refriテーブルのname
+                        Text('name${_memolist[index].name}'),
+                        //削除ボタン　これを押すとエラーになるので、後で変更する予定
+                        SizedBox(
+                          width: 76,
+                          height: 25,
+                          //RaisedButtonは古い　ElavatedButtonが推奨される
+                          child: ElevatedButton(
+                            child: Text('削除'),
+                            onPressed: () async {
+                              //var _counter = _memolist[index].count - 1;
+                              var update_refri3 = Refri(
+                                  id: _memolist[index].id,
+                                  //count: _counter,
+                                  date: _memolist[index].date,
+                                  name: _memolist[index].name);
+                              await Refri.updateMemo(update_refri3);
+                              final List<Refri> memos = await Refri.getMemos();
+                              setState(() {
+                                _memolist = memos;
+                              });
+                            },
                           ),
-                          //refriテーブルのdate
-                          Text('${_memolist[index].date}'),
-                          //refriテーブルのcount
-                          Text('count  ${_memolist[index].count.toString()}'),
-                          //refriテーブルのname
-                          Text('name${_memolist[index].name}'),
-                          //削除ボタン　これを押すとエラーになるので、後で変更する予定
-                          SizedBox(
-                            width: 76,
-                            height: 25,
-                            //RaisedButtonは古い　ElavatedButtonが推奨される
-                            child: ElevatedButton(
-                              child: Text('削除'),
-                              onPressed: () async {
-                                var _counter = _memolist[index].count - 1;
-                                var update_refri3 = Refri(
-                                    id: _memolist[index].id,
-                                    count: _counter,
-                                    date: _memolist[index].date,
-                                    name: _memolist[index].name);
-                                await Refri.updateMemo(update_refri3);
-                                final List<Refri> memos = await Refri.getMemos();
-                                setState(() {
-                                  _memolist = memos;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
+                        ),
                       ],
+                      //],
                     ],
                   ),
                 );

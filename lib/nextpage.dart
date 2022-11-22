@@ -2,15 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import './main.dart';
-import './page1.dart';
-import './page2.dart';
 import './main3_4.dart';
-import './popup_check.dart';
 import './expired.dart';
 /*import './page3.dart';
 import './page4.dart';*/
 import './database_myref.dart';
-import './database_myref2.dart';
 import './database_material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -44,16 +40,15 @@ class _NextPageState extends State<NextPage> {
     _memolist2 = await Material_db.getMaterial();
   }
 
-  List<Refri2> _memolist3 = [];
+  /*List<Refri2> _memolist3 = [];
   Stream<int> initializeDemo3() async* {
     _memolist3 = await Refri2.getMemos2();
-  }
+  }*/
 
   //複数のテーブルを同時に取得するために必要な関数
   //https://qiita.com/ninoko1995/items/fe7115d8030a7a4cce0d
   Stream<Map<String, dynamic>> streamName2() {
-    return initializeDemo()
-        .combineLatestAll([initializeDemo2(), initializeDemo3()]).map((data) {
+    return initializeDemo().combineLatestAll([initializeDemo2()]).map((data) {
       return {
         "initializeDemo": data[0],
         "initializeDemo2": data[1],
@@ -121,6 +116,7 @@ class _NextPageState extends State<NextPage> {
               }
               //表示画面
               return ListView.builder(
+                //itemCount: _memolist.length,
                 itemCount: _memolist.length,
                 //itemCount: _memolist2.length,
                 itemBuilder: (context, index) {
@@ -132,46 +128,40 @@ class _NextPageState extends State<NextPage> {
                         //ifの順番を入れ替えたら動いた　count!=0が135行目、賞味期限の判定は136行目
                         //count!=0は動く
                         //https://zenn.dev/taji/articles/d1d94b5efbed35
-                        if (_memolist[index].count != 0) ...[
-                          if (DateTime.parse(_now).isBefore(
-                              DateTime.parse(_memolist[index].date))) ...[
-                            //refriテーブルのid
-                            /*Text(
+                        //if (_memolist[index].count != 0) ...[
+                        if (DateTime.parse(_now).isBefore(
+                            DateTime.parse(_memolist[index].date))) ...[
+                          //refriテーブルのid
+                          /*Text(
                               'ID${_memolist[index].id.toString()}',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),*/
-                            //refriテーブルのdate
-                            Text('${_memolist[index].date}'),
-                            //refriテーブルのcount
-                            Text('count  ${_memolist[index].count.toString()}'),
-                            //refriテーブルのname
-                            //ここだけ_memolist2（materialテーブル）を使う
-                            Text('name${_memolist[index].name}'),
-                            //削除ボタン　これを押すとエラーになるので、後で変更する予定
-                            SizedBox(
-                              width: 76,
-                              height: 25,
-                              //RaisedButtonは古い　ElavatedButtonが推奨される
-                              child: ElevatedButton(
-                                child: Text('削除'),
-                                onPressed: () async {
-                                  var _counter = _memolist[index].count - 1;
-                                  var update_refri3 = Refri(
-                                      id: _memolist[index].id,
-                                      count: _counter,
-                                      date: _memolist[index].date,
-                                      name: _memolist[index].name);
-                                  await Refri.updateMemo(update_refri3);
-                                  final List<Refri> memos =
-                                      await Refri.getMemos();
-                                  setState(() {
-                                    _memolist = memos;
-                                  });
-                                },
-                              ),
+                          //refriテーブルのdate
+                          Text('${_memolist[index].date}'),
+                          //refriテーブルのcount
+                          //Text('count  ${_memolist[index].count.toString()}'),
+                          //refriテーブルのname
+                          //ここだけ_memolist2（materialテーブル）を使う
+                          Text('name${_memolist[index].name}'),
+                          //削除ボタン　これを押すとエラーになるので、後で変更する予定
+                          SizedBox(
+                            width: 76,
+                            height: 25,
+                            //RaisedButtonは古い　ElavatedButtonが推奨される
+                            child: ElevatedButton(
+                              child: Text('削除'),
+                              onPressed: () async {
+                                await Refri.deleteMemo(_memolist[index].id);
+                                final List<Refri> memos =
+                                    await Refri.getMemos();
+                                setState(() {
+                                  _memolist = memos;
+                                });
+                              },
                             ),
-                          ],
+                          ),
                         ],
+                        //],
                       ],
                     ),
                   );
