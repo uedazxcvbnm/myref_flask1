@@ -20,7 +20,8 @@ import './database_myref.dart';
 //assetカラムからデータベースを取得する
 Future<Database> get database async {
   var databasesPath = await getDatabasesPath();
-  var path = join(databasesPath, 'assets/myref3.db');
+  //var path = join(databasesPath, 'assets/myref3.db');
+  var path = join(databasesPath, 'assets/myref.db');
   var exists = await databaseExists(path);
 
   if (!exists) {
@@ -28,7 +29,8 @@ Future<Database> get database async {
       await io.Directory(dirname(path)).create(recursive: true);
     } catch (_) {}
 
-    var data = await rootBundle.load(join('assets', 'myref3.db'));
+    //var data = await rootBundle.load(join('assets', 'myref3.db'));
+    var data = await rootBundle.load(join('assets', 'myref.db'));
     List<int> bytes = data.buffer.asUint8List(
       data.offsetInBytes,
       data.lengthInBytes,

@@ -4,7 +4,6 @@
 
 //わかりやすい説明https://417.run/pg/flutter-dart/flutter-sqlite-import/
 import 'dart:io' as io;
-import './database_myref.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -16,7 +15,8 @@ import 'package:blobs/blobs.dart';
 //assetカラムからデータベースを取得する
 Future<Database> get database async {
   var databasesPath = await getDatabasesPath();
-  var path = join(databasesPath, 'assets/myref3.db');
+  //var path = join(databasesPath, 'assets/myref3.db');
+  var path = join(databasesPath, 'assets/myref.db');
   // データベースが存在するかどうかを確認する
   var exists = await databaseExists(path);
   if (!exists) {
@@ -25,7 +25,8 @@ Future<Database> get database async {
       await io.Directory(dirname(path)).create(recursive: true);
     } catch (_) {}
     // アセットからコピー
-    var data = await rootBundle.load(join('assets', 'myref3.db'));
+    //var data = await rootBundle.load(join('assets', 'myref3.db'));
+    var data = await rootBundle.load(join('assets', 'myref.db'));
     List<int> bytes = data.buffer.asUint8List(
       data.offsetInBytes,
       data.lengthInBytes,
