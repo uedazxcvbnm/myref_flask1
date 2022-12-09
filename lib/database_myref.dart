@@ -41,13 +41,13 @@ Future<Database> get database async {
 //クラス
 class Refri {
   final int id;
-  //final int count;
+  final int count;
   final String date;
   final String name;
 
   Refri({
     required this.id,
-    //required this.count,
+    required this.count,
     required this.date,
     required this.name,
   });
@@ -55,7 +55,7 @@ class Refri {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      //'count': count,
+      'count': count,
       'date': date,
       'name': name,
     };
@@ -64,7 +64,7 @@ class Refri {
   @override
   String toString() {
     //return 'refri{id: $id, count:$count,date:$date,name$name}';
-    return 'refri{id: $id,date:$date,name$name}';
+    return 'refri{id: $id,count: $count,date:$date,name$name}';
   }
 
   //挿入
@@ -91,7 +91,7 @@ class Refri {
     return List.generate(map2.length, (i) {
       return Refri(
         id: map2[i]['id'],
-        //count: map2[i]['count'],
+        count: map2[i]['count'],
         date: map2[i]['date'],
         name: map2[i]['name'],
       );
@@ -137,7 +137,7 @@ class Refri {
     return List.generate(map2.length, (i) {
       return Refri(
         id: map2[i]['id'],
-        //count: map2[i]['count'],
+        count: map2[i]['count'],
         date: map2[i]['date'],
         name: map2[i]['name'],
       );

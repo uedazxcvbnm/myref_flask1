@@ -51,6 +51,8 @@ class Material_db {
   final String category;
   final int exday;
   final String image;
+  final int count;
+  final String date;
 
   Material_db({
     required this.id,
@@ -59,6 +61,8 @@ class Material_db {
     required this.category,
     required this.exday,
     required this.image,
+    required this.count,
+    required this.date,
   });
 
   Map<String, dynamic> toMap() {
@@ -69,12 +73,14 @@ class Material_db {
       'category': this.category,
       'exday': this.exday,
       'image': this.image,
+      'count': this.count,
+      'date': this.date,
     };
   }
 
   @override
   String toString() {
-    return 'material{id: $id, name: $name, kana:$kana,category:$category,exday:$exday,image:$image)';
+    return 'material{id: $id, name: $name, kana:$kana,category:$category,exday:$exday,image:$image,count: $count,date: $date)';
     /**/
   }
 
@@ -101,7 +107,22 @@ class Material_db {
         category: maps[i]['category'],
         exday: maps[i]['exday'],
         image: maps[i]['image'],
+        count: maps[i]['count'],
+        date: maps[i]['date'],
       );
     });
+  }
+
+  //更新
+  static Future<void> updateMaterial(Material_db material) async {
+    // Get a reference to the database.
+    final db = await database;
+    await db.update(
+      'material',
+      material.toMap(),
+      where: "id = ?",
+      whereArgs: [material.id],
+      conflictAlgorithm: ConflictAlgorithm.fail,
+    );
   }
 }

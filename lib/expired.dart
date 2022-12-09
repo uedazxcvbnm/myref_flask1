@@ -1,142 +1,145 @@
 //NextPage ボトムナビゲーションバーの２つ目のページ（冷蔵庫の中にある食材一覧の画面）
+import 'package:app_grid13/nextpage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import './main.dart';
 import './main3_4.dart';
-/*import './page3.dart';
-import './page4.dart';*/
-import './database_myref.dart';
-import './database_material.dart';
+import './nextpage.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
 import 'package:stream_transform/stream_transform.dart';
-import './main.dart';
 import 'package:blobs/blobs.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 // NextPage ボトムナビゲーションバーの２つ目のページ（冷蔵庫の中にある食材一覧の画面）
 class Expired_food extends StatefulWidget {
   const Expired_food({Key? key}) : super(key: key);
   //final String title;
   @override
-  State<Expired_food> createState() => Expired_foodState();
+  State<Expired_food> createState() => _Expired_foodState();
 }
 
-class Expired_foodState extends State<Expired_food> {
-  var _selectedValue = '機能１';
-  var _usStates = ["機能１", "機能２", "機能３"];
-
-  //メモリスト
-  List<Refri> _memolist = [];
-  Stream<int> initializeDemo() async* {
-    _memolist = await Refri.getMemos();
+//https://zenn.dev/ryouhei_furugen/articles/ebcd36964b0182
+class Refri_fire {
+  // ドキュメントを扱うDocumentSnapshotを引数にしたコンストラクタを作る
+  //聞くしかない
+  Refri_fire(DocumentSnapshot doc) {
+    //　ドキュメントの持っているフィールド'title'をこのBookのフィールドtitleに代入
+    id = doc['id'];
+    //count = doc['count'];
+    date = doc['date'];
+    name = doc['name'];
   }
 
-  List<Material_db> _memolist2 = [];
-  Stream<int> initializeDemo2() async* {
-    _memolist2 = await Material_db.getMaterial();
+  // Bookで扱うフィールドを定義しておく。
+  //ここに?をつけたら動いた
+  //型をvarにした
+  //https://computer.sarujincanon.com/2022/01/03/non-nullable-instance_error/]
+  //String? id;
+  //String? id, date;
+  var id, date, name;
+}
+
+class MainModel extends ChangeNotifier {
+  // ListView.builderで使うためのBookのList booksを用意しておく。
+  List<Refri_fire> refri = [];
+  Future<void> fetchrefri() async {
+    // Firestoreからコレクション'books'(QuerySnapshot)を取得してdocsに代入。
+    //final docs = await FirebaseFirestore.instance.collection('refri').get();
+    final docs = await FirebaseFirestore.instance.collection('refri').get();
+
+    // getter docs: docs(List<QueryDocumentSnapshot<T>>型)のドキュメント全てをリストにして取り出す。
+    // map(): Listの各要素をBookに変換
+    // toList(): Map()から返ってきたIterable→Listに変換する。
+    final refri = docs.docs.map((doc) => Refri_fire(doc)).toList();
+    this.refri = refri;
+    notifyListeners();
   }
+}
 
-  /*List<Refri> _memolist3 = [];
-  Stream<int> initializeDemo3() async* {
-    _memolist3 = await Refri.getMemosDates();
-  }*/
+var now = DateTime.now();
+int now_seconds = (now.millisecondsSinceEpoch ~/ 1000);
 
-  //複数のテーブルを同時に取得するために必要な関数
-  //https://qiita.com/ninoko1995/items/fe7115d8030a7a4cce0d
-  Stream<Map<String, dynamic>> streamName2() {
-    return initializeDemo().combineLatestAll([initializeDemo2()]).map((data) {
-      return {
-        "initializeDemo": data[0],
-        "initializeDemo2": data[1],
-        "initializeDemo3()": data[2],
-      };
-    });
-  }
-
-  //id番号
-  var _selectedvalue_id;
-
-  //非同期関数定義
-  int apple_counter = 0;
-  var _now = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-  //ウィジェットの表示/非表示で使うもの
-  DateTime _now2 = DateTime.now();
-
+class _Expired_foodState extends State<Expired_food> {
+  @override
   Widget build(BuildContext context) {
+    //return MaterialApp(
     return Scaffold(
       appBar: AppBar(
-        title: Text('賞味期限管理アプリ'),
+        title: Text('賞味期限切れの食材'),
         backgroundColor: Colors.green,
-        //automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+              icon: Icon(Icons.update),
+              onPressed: () {
+                setState(() {
+                  var now = DateTime.now();
+                  now_seconds = (now.millisecondsSinceEpoch ~/ 1000);
+                });
+              }),
+        ],
       ),
-      body: Center(
-        child: StreamBuilder(
-          stream: streamName2(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // 非同期処理未完了 = 通信中
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            //表示画面
-            return ListView.builder(
-              itemCount: _memolist.length,
-              //itemCount: _memolist2.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: Column(
-                    children: <Widget>[
-                      //if(_memolist[index].count != 0)...[
-                      if (DateTime.parse(_now)
-                          .isAfter(DateTime.parse(_memolist[index].date))) ...[
-                        //if (_memolist3[index].count != 0)
-                        //refriテーブルのid
-                        Text(
-                          'ID${_memolist[index].id.toString()}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        //refriテーブルのdate
-                        Text('${_memolist[index].date}'),
-                        //refriテーブルのcount
-                        //Text('count  ${_memolist[index].count.toString()}'),
-                        //refriテーブルのname
-                        Text('name${_memolist[index].name}'),
-                        //削除ボタン　これを押すとエラーになるので、後で変更する予定
-                        SizedBox(
-                          width: 76,
-                          height: 25,
-                          //RaisedButtonは古い　ElavatedButtonが推奨される
-                          child: ElevatedButton(
-                            child: Text('削除'),
-                            onPressed: () async {
-                              //var _counter = _memolist[index].count - 1;
-                              var update_refri3 = Refri(
-                                  id: _memolist[index].id,
-                                  //count: _counter,
-                                  date: _memolist[index].date,
-                                  name: _memolist[index].name);
-                              await Refri.updateMemo(update_refri3);
-                              final List<Refri> memos = await Refri.getMemos();
-                              setState(() {
-                                _memolist = memos;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                      //],
-                    ],
-                  ),
+      body: Column(
+        children: [
+          /*Container(
+              padding: EdgeInsets.all(8),
+              child: Text('ログイン情報：${user.email}'),
+            ),*/
+          Expanded(
+            // FutureBuilder
+            // 非同期処理の結果を元にWidgetを作れる
+            child: StreamBuilder<QuerySnapshot>(
+              // 投稿メッセージ一覧を取得（非同期処理）
+              // 投稿日時でソート
+              stream: FirebaseFirestore.instance
+                  .collection('refri')
+                  .orderBy('date_seconds', descending: false)
+                  .where("date_seconds", isLessThanOrEqualTo: now_seconds)
+                  .snapshots(),
+              //
+              //.startAfter([Timestamp.fromDate(_now)])
+              builder: (context, snapshot) {
+                // データが取得できた場合
+                if (snapshot.hasData) {
+                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
+                  // 取得した投稿メッセージ一覧を元にリスト表示
+                  return ListView(
+                    children: documents.map((document) {
+                      return Card(
+                        child: ListTile(
+                            //children: <Widget>[
+                            //leading: Text(document['id'].toString()),
+                            title: Text(document['name'].toString()),
+                            subtitle: Text(document['date'].toString()),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () async {
+                                // 投稿メッセージのドキュメントを削除
+                                await FirebaseFirestore.instance
+                                    .collection('refri')
+                                    .doc(document.id.toString())
+                                    .delete();
+                              },
+                            )
+                            //],
+                            ),
+                      );
+                    }).toList(),
+                  );
+                }
+                // データが読込中の場合
+                return Center(
+                  child: Text('読込中...'),
                 );
               },
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -60,7 +60,17 @@ docs = conn.cursor()
 
 # dbをpandasで読み出す。
 #docs= pd.read_sql('SELECT * FROM material', conn)
-docs.execute('SELECT name FROM refri')
+#docs.execute('SELECT name FROM refri')
+
+#https://rayt-log.com/%E3%80%90firebase%E3%80%91python%E3%81%A7cloud-firestore%E3%81%AB%E5%80%A4%E3%82%92%E8%BF%BD%E5%8A%A0%E3%83%BB%E5%8F%96%E5%BE%97%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95%EF%BC%81/
+#Firebaseのrefriを取得
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+import time
+
+refri = db.collection('refri')
+docs = refri.stream()
 
 #print(type(docs))
 
@@ -72,13 +82,15 @@ df_recipe2 = pd.DataFrame(columns=['foodImageUrl', 'recipeUrl'])
 #recipe_test1.json
 for doc in docs:
     #print(type(doc))
-    str = ''.join(doc)
-    str.replace(",","")
+    #str = ''.join(doc)
+    #str.replace(",","")
     #print(str)
     #doc=doc['name']
+    doc=doc.to_dict()
+    doc=doc['name']
     #print(doc)
     #docから'name'だけを引っ張りたい
-    df_keyword = df.query('categoryName.str.contains(@str)', engine='python')
+    df_keyword = df.query('categoryName.str.contains(@doc)', engine='python')
     #print(df_keyword)
     #print('a')
     df_keyword2 = df_keyword['categoryName']

@@ -23,6 +23,94 @@ class NextPage extends StatefulWidget {
   State<NextPage> createState() => _NextPageState();
 }
 
+var now = DateTime.now();
+
+int now_seconds = (now.millisecondsSinceEpoch ~/ 1000);
+
+class _NextPageState extends State<NextPage> {
+  @override
+  Widget build(BuildContext context) {
+    //return MaterialApp(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('賞味期限管理アプリ'),
+        backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+              icon: Icon(Icons.update),
+              onPressed: () {
+                setState(() {
+                  var now = DateTime.now();
+                  now_seconds = (now.millisecondsSinceEpoch ~/ 1000);
+                });
+              }),
+          IconButton(
+              icon: Icon(Icons.android),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: ((context) => Expired_food())));
+              }),
+        ],
+      ),
+      body: Column(
+        children: [
+          /*Container(
+              padding: EdgeInsets.all(8),
+              child: Text('ログイン情報：${user.email}'),
+            ),*/
+          Expanded(
+            // FutureBuilder
+            // 非同期処理の結果を元にWidgetを作れる
+            child: StreamBuilder<QuerySnapshot>(
+              // 投稿メッセージ一覧を取得（非同期処理）
+              // 投稿日時でソート
+              stream: FirebaseFirestore.instance
+                  .collection('refri')
+                  .orderBy('date_seconds', descending: false)
+                  .where("date_seconds", isGreaterThanOrEqualTo: now_seconds)
+                  .snapshots(),
+              //.startAtDocument(_now)
+              //.startAt([Timestamp.fromDate(_now)])
+              builder: (context, snapshot) {
+                // データが取得できた場合
+                if (snapshot.hasData) {
+                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
+                  // 取得した投稿メッセージ一覧を元にリスト表示
+                  return ListView(
+                    children: documents.map((document) {
+                      return Card(
+                        child: ListTile(
+                            title: Text(document['name'].toString()),
+                            subtitle: Text(document['date'].toString()),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () async {
+                                // 投稿メッセージのドキュメントを削除
+                                await FirebaseFirestore.instance
+                                    .collection('refri')
+                                    .doc(document.id.toString())
+                                    .delete();
+                              },
+                            )
+                            //],
+                            ),
+                      );
+                    }).toList(),
+                  );
+                }
+                // データが読込中の場合
+                return Center(
+                  child: Text('読込中...'),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 //https://zenn.dev/ryouhei_furugen/articles/ebcd36964b0182
 class Refri_fire {
   // ドキュメントを扱うDocumentSnapshotを引数にしたコンストラクタを作る
@@ -58,66 +146,5 @@ class MainModel extends ChangeNotifier {
     final refri = docs.docs.map((doc) => Refri_fire(doc)).toList();
     this.refri = refri;
     notifyListeners();
-  }
-}
-
-class _NextPageState extends State<NextPage> {
-  @override
-  Widget build(BuildContext context) {
-    //return MaterialApp(
-    return Scaffold(
-      body: Column(
-        children: [
-          /*Container(
-            padding: EdgeInsets.all(8),
-            child: Text('ログイン情報：${user.email}'),
-          ),*/
-          Expanded(
-            // FutureBuilder
-            // 非同期処理の結果を元にWidgetを作れる
-            child: StreamBuilder<QuerySnapshot>(
-              // 投稿メッセージ一覧を取得（非同期処理）
-              // 投稿日時でソート
-              stream:
-                  FirebaseFirestore.instance.collection('refri').snapshots(),
-              builder: (context, snapshot) {
-                // データが取得できた場合
-                if (snapshot.hasData) {
-                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                  // 取得した投稿メッセージ一覧を元にリスト表示
-                  return ListView(
-                    children: documents.map((document) {
-                      return Card(
-                        child: ListTile(
-                            //children: <Widget>[
-                            leading: Text(document['id'].toString()),
-                            title: Text(document['name'].toString()),
-                            subtitle: Text(document['date'].toString()),
-                            trailing: IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () async {
-                                // 投稿メッセージのドキュメントを削除
-                                await FirebaseFirestore.instance
-                                    .collection('refri')
-                                    .doc(document.id.toString())
-                                    .delete();
-                              },
-                            )
-                            //],
-                            ),
-                      );
-                    }).toList(),
-                  );
-                }
-                // データが読込中の場合
-                return Center(
-                  child: Text('読込中...'),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

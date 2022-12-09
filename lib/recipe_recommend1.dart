@@ -75,12 +75,13 @@ class _RecipePageState extends State<RecipePage> {
                             await launchUrl(url);
                           },
                           child: Container(
-                            width: 60,
-                            height: 70,
+                            alignment: Alignment.center,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Image.network(document['image']),
+                                Expanded(
+                                  child: Image.network(document['image']),
+                                ),
                               ],
                             ),
                           ),

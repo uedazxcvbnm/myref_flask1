@@ -24,20 +24,21 @@ class LocalNotifications {
     AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings(iconImage);
     // iOS
-    /*IOSInitializationSettings iOSInitializationSettings =
-        IOSInitializationSettings(
+    DarwinInitializationSettings iOSInitializationSettings =
+        DarwinInitializationSettings(
       // バックグラウンドや終了時にローカル通知のバナーをクリックした際に動く処理
       onDidReceiveLocalNotification: onDidReceiveLocalNotification,
-    );*/
+    );
     // 端末ごとの通知設定を登録する
     InitializationSettings initializationSettings = InitializationSettings(
       android: androidInitializationSettings,
-      //iOS: iOSInitializationSettings,
+      iOS: iOSInitializationSettings,
     );
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     flutterLocalNotificationsPlugin!.initialize(
       initializationSettings,
       //onSelectNotification: onSelectNotification,
+      //onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
     );
 
     return;
@@ -51,7 +52,8 @@ class LocalNotifications {
   }
 
   /// 通知バナーをクリックした際に呼ばれる
-  Future<void> onSelectNotification(String? payload) async {}
+  ///Future<void> onSelectNotification(String? payload) async {}
+  Future<void> onDidReceiveNotificationResponse(String? payload) async {}
 
   /// アプリがバックグラウンドや終了時に通知バナーがタップされたときに呼ばれる
   Future<void> onDidReceiveLocalNotification(
@@ -88,7 +90,7 @@ class LocalNotifications {
           icon: icon,
         ),
         // iOS側
-        //iOS: IOSNotificationDetails(),
+        iOS: DarwinNotificationDetails(),
       );
 
       await flutterLocalNotificationsPlugin!.zonedSchedule(

@@ -219,6 +219,8 @@ class _MyHomePage extends State<MyHomePage> {
   // ローカル通知の初期化
   LocalNotifications localNotifications = new LocalNotifications();
 
+  var _counter = 0;
+
   Widget build(BuildContext context) {
     return Scaffold(
       //length: _tabs.length,
@@ -270,54 +272,115 @@ class _MyHomePage extends State<MyHomePage> {
                           //https://www.choge-blog.com/programming/flutterinkwelltapeffectcolor/
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            /*await FirebaseFirestore.instance
-                                          .collection('refri')
-                                          .doc('id_abc')
-                                          .set({
-                                        'id': 4,
-                                        'date': '2022/10/7',
-                                        'name': 'オクラ',
-                                      });*/
                             //今日の日付
                             var now = DateTime.now();
-                            //日付の表示形式
                             var _now = DateFormat('yyyy-MM-dd').format(now);
+                            DateTime past_sqlite = DateFormat('yyyy-MM-dd')
+                                .parse(_memolist2[index].date.toString());
                             //stringからDateTimeに変換
                             var _nowDate = DateTime.parse(_now);
+                            if (_nowDate != past_sqlite) {
+                              _counter = 0;
+                              var update_refri2 = Material_db(
+                                id: _memolist2[index].id,
+                                name: _memolist2[index].name,
+                                kana: _memolist2[index].kana,
+                                category: _memolist2[index].category,
+                                exday: _memolist2[index].exday,
+                                image: _memolist2[index].image,
+                                count: _counter,
+                                date: past_sqlite.toString(),
+                              );
 
-                            //一時的なテスト 10日前
-                            //https://qiita.com/seiboy/items/7b632103088c5ed65082
-                            //_nowDate = _nowDate.add(Duration(days: 1) * -1);
-                            //_nowDate =_nowDate.add(Duration(days: 1) * 1);
-                            //_nowDate=_nowDate.add(Duration(days:2)*1);
+                              //データベースをアップデート
+                              await Material_db.updateMaterial(update_refri2);
+                              //}
+                              //データの取得
+                              final List<Material_db> memos2 =
+                                  await Material_db.getMaterial();
 
-                            //firebaseで使用する場合、var sql3の定義が悪かった
-                            //var sql3 = material[index].id;
-                            int sql4 = _memolist2[index].exday;
+                              super.setState(() {
+                                _memolist2 = memos2;
+                              });
 
-                            //賞味期限の計算　賞味期限＝今日の日付+materialテーブルのexdayカラム
-                            var _time = _nowDate.add(Duration(days: sql4));
-                            var _nowtime =
-                                DateFormat('yyyy-MM-dd').format(_time);
+                              if (_memolist2[index].count < 1) {
+                                /*await FirebaseFirestore.instance
+                                            .collection('refri')
+                                            .doc('id_abc')
+                                            .set({
+                                          'id': 4,
+                                          'date': '2022/10/7',
+                                          'name': 'オクラ',
+                                        });*/
 
-                            documentID++;
+                                //一時的なテスト 10日前
+                                //https://qiita.com/seiboy/items/7b632103088c5ed65082
+                                //_nowDate = _nowDate.add(Duration(days: 1) * -1);
+                                //_nowDate =_nowDate.add(Duration(days: 1) * 1);
+                                //_nowDate=_nowDate.add(Duration(days:2)*1);
 
-                            bool isComppleted =
-                                await localNotifications.SetLocalNotification(
-                                    titleTextEditingController.text,
-                                    contentsTextEditingController.text,
-                                    DateTime.parse(_nowtime));
+                                //firebaseで使用する場合、var sql3の定義が悪かった
+                                //var sql3 = material[index].id;
+                                int sql4 = _memolist2[index].exday;
 
-                            await FirebaseFirestore.instance
-                                .collection('refri')
-                                .doc(documentID.toString())
-                                .set({
-                              //'id': material[index].id.toString(),
-                              'id': documentID,
-                              'date': _nowtime.toString(),
-                              //'name': material[index].name.toString(),
-                              'name': _memolist2[index].name,
-                            });
+                                //賞味期限の計算　賞味期限＝今日の日付+materialテーブルのexdayカラム
+                                var _time = _nowDate.add(Duration(days: sql4));
+                                var _expireday =
+                                    DateFormat('yyyy-MM-dd').format(_time);
+
+                                final int expire_seconds =
+                                    (_time.millisecondsSinceEpoch ~/ 1000);
+
+                                //通知が来る日の設定：賞味期限が切れる日の一日前
+                                var alert_time =
+                                    _time.add(Duration(days: 1) * -1);
+
+                                documentID++;
+
+                                _counter = _counter + 1;
+                                var update_refri2 = Material_db(
+                                  id: _memolist2[index].id,
+                                  name: _memolist2[index].name,
+                                  kana: _memolist2[index].kana,
+                                  category: _memolist2[index].category,
+                                  exday: _memolist2[index].exday,
+                                  image: _memolist2[index].image,
+                                  count: _counter,
+                                  date: _nowDate.toString(),
+                                );
+
+                                //データベースをアップデート
+                                await Material_db.updateMaterial(update_refri2);
+                                //}
+                                //データの取得
+                                final List<Material_db> memos2 =
+                                    await Material_db.getMaterial();
+
+                                super.setState(() {
+                                  _memolist2 = memos2;
+                                });
+                                //通知：alert_timeは、食材の賞味期限が切れる一日前
+                                bool isComppleted = await localNotifications
+                                    .SetLocalNotification(
+                                        titleTextEditingController.text,
+                                        contentsTextEditingController.text,
+                                        alert_time);
+
+                                await FirebaseFirestore.instance
+                                    .collection('refri')
+                                    .doc(documentID.toString())
+                                    .set({
+                                  //'id': material[index].id.toString(),
+                                  //'id': documentID,
+                                  //'id': _counter,
+                                  //'date': _time,
+                                  'date': _expireday,
+                                  'date_seconds': expire_seconds,
+                                  //'name': material[index].name.toString(),
+                                  'name': _memolist2[index].name,
+                                });
+                              }
+                            }
                           },
                           child: Container(
                             width: 80,
