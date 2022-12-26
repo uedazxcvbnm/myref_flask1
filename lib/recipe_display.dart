@@ -1,19 +1,11 @@
 //NextPage ボトムナビゲーションバーの２つ目のページ（冷蔵庫の中にある食材一覧の画面）
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'dart:async';
-import 'package:stream_transform/stream_transform.dart';
-import 'package:blobs/blobs.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import './recipe.dart';
+import './recipeApi.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:http/http.dart' as http;
+import './addRecipeForm.dart';
 
 // NextPage ボトムナビゲーションバーの２つ目のページ（冷蔵庫の中にある食材一覧の画面）
 class RecipePage extends StatefulWidget {
@@ -25,82 +17,148 @@ class RecipePage extends StatefulWidget {
 
 class _RecipePageState extends State<RecipePage> {
   //非同期関数定義
-  int apple_counter = 0;
-  var _now = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  //int apple_counter = 0;
+  //var _now = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+  //flask
+  List<Recipe>? recipes;
+  var isLoaded = false;
+
+  @override
+  void initState() {
+    getRecord();
+  }
+
+  getRecord() async {
+    recipes = await RecipeApi().getAllrecipes();
+    if (recipes != null) {
+      setState(() {
+        isLoaded = true;
+      });
+    }
+  }
+
+  Future<void> showMessageDialog(String title, String msg) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: Text(
+              msg,
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: Text('Ok'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          /*Container(
-            padding: EdgeInsets.all(8),
-            child: Text('ログイン情報：${user.email}'),
-          ),*/
-          Expanded(
-            // FutureBuilder
-            // 非同期処理の結果を元にWidgetを作れる
-            child: StreamBuilder<QuerySnapshot>(
-              // 投稿メッセージ一覧を取得（非同期処理）
-              // 投稿日時でソート
-              stream:
-                  FirebaseFirestore.instance.collection('recipe').snapshots(),
-              builder: (context, snapshot) {
-                // データが取得できた場合
-                //if (snapshot.hasData) {
-                //final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                /*final recipes =
-                    FirebaseFirestore.instance.collection('recipe').snapshots();*/
-                // 取得した投稿メッセージ一覧を元にリスト表示
-                final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                return GridView.count(
-                  /*gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, //カラム数
-                  ),*/
-                  crossAxisCount: 2,
-                  children: documents.map((document) {
-                    //itemCount: recipes.length,
-                    //itemBuilder: (context, index) {
-                    //return Scaffold(
-                    return Card(
-                      //child: documents.map((document) {
-                      child: GestureDetector(
-                        child: InkWell(
-                          //SpringButtonType.WithOpacity,
-                          //タップエフェクト　色がピンクにならないけど、色は透明の方がいい
-                          //https://www.choge-blog.com/programming/flutterinkwelltapeffectcolor/
-                          highlightColor: Colors.transparent,
-                          onTap: () async {
-                            var url = Uri.parse(document['URL']);
-                            await launchUrl(url);
-                          },
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Image.network(document['image']),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      //}).toList(),
-                    );
-                    //);
-                  }).toList(),
-                );
-              },
-            ),
+      body: Visibility(
+        visible: isLoaded,
+        replacement: const Center(child: CircularProgressIndicator()),
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, //カラム数
           ),
-        ],
+          itemCount: recipes?.length,
+          itemBuilder: (context, index) {
+            return Card(
+                child: GestureDetector(
+              child: InkWell(
+                highlightColor: Colors.transparent,
+                onTap: () async {
+                  var url = Uri.parse(recipes![index].url);
+                  await launchUrl(url);
+                },
+                child: Container(
+                  width: 60,
+                  height: 70,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Image.network(recipes![index].image),
+                    ],
+                  ),
+                ),
+              ),
+            ));
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const addRecipeForm())).then((data) {
+            if (data != null) {
+              showMessageDialog("Success", "$data Detail Added Success.");
+              getRecord();
+            }
+          });
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
+/*child: ListView.builder(
+            itemCount: recipes?.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(recipes![index].image),
+                subtitle: Text(recipes![index].url),
+                /*trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () async {
+                        Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        updateUserForm(users![index])))
+                            .then((data) {
+                          if (data != null) {
+                            showMessageDialog(
+                                "Success", "$data Detail Updated Success.");
+                            getRecord();
+                          }
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.edit,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        User user =
+                            await UserApi().deleteUSer(users![index].id);
+                        showMessageDialog(
+                            "Success", "$user Detail Deleted Success.");
+                        getRecord();
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),*/
+              );
+            }),*/
 
 
 

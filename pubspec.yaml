@@ -55,6 +55,7 @@ dependencies:
   json_annotation: ^4.7.0
   firebase_core: ^2.2.0
   cloud_firestore: ^4.0.5
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:

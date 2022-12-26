@@ -80,154 +80,62 @@ df_recipe2 = pd.DataFrame(columns=['foodImageUrl', 'recipeUrl'])
 #df_recipe3= pd.DataFrame(columns=['recipeTitle','recipeMaterial'])
 
 #recipe_test1.json
-for doc in docs:
-    #print(type(doc))
-    #str = ''.join(doc)
-    #str.replace(",","")
-    #print(str)
-    #doc=doc['name']
-    doc=doc.to_dict()
-    doc=doc['name']
-    #print(doc)
-    #docから'name'だけを引っ張りたい
-    df_keyword = df.query('categoryName.str.contains(@doc)', engine='python')
-    #print(df_keyword)
-    #print('a')
-    df_keyword2 = df_keyword['categoryName']
-    df_keyword2.to_json('recipe_test1.json')
-    #df_keyword.to_csv('recipe.csv')
-    #print(df_keyword)
-    #print("True")
-    
-    #firebase
-    '''
-    json_open = open('recipe_test1.json', 'r')
-    json_load = json.load(json_open)
 
-    for recipe in json_load.values():
-        print(type(recipe))
-        #doc_ref = db.collection(u'recipe').document()
-        #print(type(doc_ref))
-        #doc_ref.set({u'categoryName':recipe})
-    '''
-
-    for index, row in df_keyword.iterrows():
-        time.sleep(3)
-        url = 'https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1057310997502838737&categoryId='+row['categoryId']
-        res = requests.get(url)
-
-
-        #firebase_recipe_ranking
-        json_data = json.loads(res.text)
-        recipes = json_data['result']
-
-    #df_recipe2
-    for recipe in recipes:
-        df_recipe2 = df_recipe2.append({'foodImageUrl':recipe['foodImageUrl'], 'recipeUrl':recipe['recipeUrl']}, ignore_index=True)
-        #print(type(df_recipe))
-        df_recipe2.to_json('recipe_test2.json')
-
-        json_open2 = open('recipe_test2.json', 'r')
-        json_load2 = json.load(json_open2)
-
-    #df_recipe3
-    '''
-    for recipe in recipes:
-        df_recipe3 = df_recipe3.append({'recipeTitle':recipe['recipeTitle'],'recipeMaterial':recipe['recipeMaterial']}, ignore_index=True)
-        #print(type(df_recipe))
-        df_recipe3.to_json('recipe_test3.json')
-
-        json_open3 = open('recipe_test3.json', 'r')
-        json_load3 = json.load(json_open3)       
-    '''       
-
-
-for recipe2,recipeURL in zip(json_load2['foodImageUrl'].values(),json_load2['recipeUrl'].values()):
-    doc_ref = db.collection(u'recipe').document()
-    doc_ref.set({u'image':recipe2,u'URL':recipeURL})
-    
-    '''
-    con2 = sqlite3.connect('assets/myref3.db')
-    cur2 = con2.cursor()
-    cur2.execute("CREATE TABLE IF NOT EXISTS Recipe(id integer,image text,url text)")
-    cur2.executemany( "INSERT INTO person(image,url) VALUES (recipe2,recipeURL)")
-    '''
-
-    #doc_ref = db.collection(u'recipe').document()
-    #doc_ref.set({u'image':recipe2,u'URL':recipeURL})
-
-        #print(recipe2)
-        #doc_ref = db.collection(u'recipe').document()
-        #print(type(doc_ref))
-        #doc_ref.set({u'URL':recipeURL})
-
-        
-
-
-
-
-        #res.to_json('recipe_test2.json')
-'''
-json_open2 = open('recipe_test2.json', 'r')
-json_load2 = json.load(json_open2)
-
-for recipe2 in json_load2.values():
-    #print(type(recipe))
-    doc_ref2 = db.collection(u'recipe').document()
-    #print(type(doc_ref2))
-    doc_ref2.set({u'recipeName':recipe2})
-'''
-
-
-'''
-for doc in docs:
-    doc=doc.to_dict()
-    doc=doc['name']
-    #print(doc)
-    #docから'name'だけを引っ張りたい
-    df_keyword = df.query('categoryName.str.contains(@doc)', engine='python')
-    df_keyword = df_keyword['categoryName']
-    df_keyword.to_json('recipe_test2.json')
-    #df_keyword.to_csv('recipe.csv')
-    #print(df_keyword)
-    #print("True")
-
-    json_open = open('recipe_test2.json', 'r')
-    json_load = json.load(json_open)
-
-    for recipe in json_load.values():
-        #print(type(recipe))
-        doc_ref = db.collection(u'recipe').document()
-        print(type(doc_ref))
-        doc_ref.set({u'categoryName':recipe})
-'''
-
-#json_data = json.loads(res.text)
-
-#pprint(json_data)
-    
-    #dict_doc=doc.to_dict()
+#print(type(doc))
+#str = ''.join(doc)
+#str.replace(",","")
+#print(str)
+#doc=doc['name']
+#print(type(doc))
+#doc=doc.to_dict()
+#doc=doc['name']
 #print(doc)
+#docから'name'だけを引っ張りたい
+df_keyword = df.query('categoryName.str.contains("枝豆")', engine='python')
+#print(df_keyword)
+#print('a')
+df_keyword2 = df_keyword['categoryName']
+df_keyword2.to_json('recipe_test1.json')
+#df_keyword.to_csv('recipe.csv')
+#print(df_keyword)
+#print("True")
 
-#df.query()。()内で変数を使う場合は、変数の前に@をつける。例：@doc
-#https://happy-analysis.com/python/python-topic-var-in-query.html
+#firebase
+'''
+json_open = open('recipe_test1.json', 'r')
+json_load = json.load(json_open)
 
-#df_keyword = df.query('categoryName.str.contains(food_contained)', engine='python')
+for recipe in json_load.values():
+    print(type(recipe))
+    #doc_ref = db.collection(u'recipe').document()
+    #print(type(doc_ref))
+    #doc_ref.set({u'categoryName':recipe})
+'''
+
+for index, row in df_keyword.iterrows():
+    time.sleep(3)
+    url = 'https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1057310997502838737&categoryId='+row['categoryId']
+    res = requests.get(url)
 
 
-#if doc.to_dict() in df:
+    #firebase_recipe_ranking
+    json_data = json.loads(res.text)
+    recipes = json_data['result']
+
+#df_recipe2
+for recipe in recipes:
+    df_recipe2 = df_recipe2.append({'foodImageUrl':recipe['foodImageUrl'], 'recipeUrl':recipe['recipeUrl']}, ignore_index=True)
+    #print(type(df_recipe))
+    
+    df_recipe2.to_json('recipe_test2.json')
+
+    json_open2 = open('recipe_test2.json', 'r')
+    json_load2 = json.load(json_open2)
 
 
 
-    #print(df)
-
-
-#データフレームをjsonに出力
-
-#, index=False,  encoding='utf_8_sig'
-
-
-
-#消したらだめ
+for recipe_image,recipeURL in zip(json_load2['foodImageUrl'].values(),json_load2['recipeUrl'].values()):
+    print(recipe_image,recipeURL)
+    
 
 

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import './nextpage.dart';
 import './provider.dart';
 import './main3_4.dart';
-import './recipe_recommend1.dart';
+import 'recipe_display.dart';
 import './database_myref.dart';
 import './database_material.dart';
 import 'package:sqflite/sqflite.dart';
@@ -106,7 +106,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('DEMO'),
+        title: const Text('賞味期限管理アプリ'),
         backgroundColor: Colors.green,
       ),
       body: IndexedStack(
@@ -227,7 +227,7 @@ class _MyHomePage extends State<MyHomePage> {
       //title: 'Grid List',
       //child: Scaffold(
       appBar: AppBar(
-        title: Text('賞味期限管理アプリ'),
+        title: Text('ここに検索のテキストボックスが入る'),
         backgroundColor: Colors.green,
       ),
       body: Center(
